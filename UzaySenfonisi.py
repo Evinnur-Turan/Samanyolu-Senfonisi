@@ -50,20 +50,7 @@ from typing import Dict, List, Sequence, Tuple
 
 import numpy as np
 
-
-def ensure_dependencies(packages: Sequence[str] = ("mido",)) -> None:
-    """Eksik paketleri (ör. Kaggle'da mido) otomatik olarak kurar."""
-    for package in packages:
-        try:
-            importlib.import_module(package)
-        except ImportError:
-            print(f"[KURULUM] '{package}' bulunamadı, pip ile kuruluyor...")
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "-q", package]
-            )
-
-
-ensure_dependencies()
+import mido
 
 import matplotlib.pyplot as plt  # noqa: E402
 import mido  # noqa: E402
