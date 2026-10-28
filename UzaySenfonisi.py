@@ -641,10 +641,71 @@ class MilkyWaySymphony:
         log("BİTTİ", "Samanyolu Senfonisi hazır. İyi dinlemeler!")
         return midi_path
 
+import streamlit as st
 
 def main() -> None:
-    MilkyWaySymphony(SymphonyConfig(bpm=60, scale="minor_pentatonic")).run()
-
+    # Sayfa Başlığı ve Temel Ayarlar
+    st.set_page_config(page_title="Samanyolu Senfonisi", page_icon="🌌", layout="centered")
+    
+    st.title("🌌 Samanyolu Senfonisi (Milky Way Symphony)")
+    st.write(
+        "Bu uygulama; yıldız ışık eğrilerini, pulsar radyo dalgalarını ve kütleçekim dalgalarını "
+        "gerçek zamanlı işleyerek dinlenebilir bir ambient uzay senfonisine (MIDI) dönüştürür."
+    )
+    
+    # Yan Panel (Sidebar) Menüsü
+    st.sidebar.header("🎛️ Senfoni Parametreleri")
+    bpm_choice = st.sidebar.selectbox("Tempo (BPM)", [60, 70], index=0)
+    scale_choice = st.sidebar.selectbox(
+        "Müzikal Skala", 
+        ["minor_pentatonic", "natural_minor"],
+        format_func=lambda x: "C Minor Pentatonic" if x == "minor_pentatonic" else "C Natural Minor"
+    )
+    bars_choice = st.sidebar.slider("Ölçü Sayısı (Süre)", 16, 64, 32, step=8)
+    
+    # Yapılandırma nesnesini Streamlit girdilerine göre oluşturuyoruz
+    # output_dir olarak geçici veya çalışma dizinini veriyoruz (Streamlit Cloud izinleri için uygun)
+    cfg = SymphonyConfig(
+        bpm=bpm_choice, 
+        scale=scale_choice, 
+        bars=bars_choice,
+        output_dir=Path.cwd() 
+    )
+    
+    st.write("---")
+    
+    # Tetikleyici Buton
+    if st.button("🎵 Uzay Verilerini Bestele", type="primary"):
+        with st.spinner("Uzay sinyalleri işleniyor, harmonik analiz yapılıyor..."):
+            try:
+                # Orijinal motorunuzu tetikliyoruz
+                symphony = MilkyWaySymphony(cfg)
+                midi_file_path = symphony.run()
+                
+                st.success("🎉 Senfoni başarıyla bestelendi!")
+                
+                # 1. Grafiği Ekrana Çizdirme
+                fig_file_path = cfg.output_dir / cfg.figure_name
+                if fig_file_path.exists():
+                    st.subheader("📊 Sinyal ve Nota Eşleme Grafiği")
+                    st.image(str(fig_file_path), caption="Veri Sonifikasyon Görselleştirmesi", use_container_width=True)
+                
+                # 2. MIDI Dosyasını İndirtme Seçeneği
+                if midi_file_path.exists():
+                    st.subheader("💾 Müziği İndir")
+                    with open(midi_file_path, "rb") as file:
+                        st.download_button(
+                            label="📥 MIDI Dosyasını İndir (.mid)",
+                            data=file,
+                            file_name=cfg.midi_name,
+                            mime="audio/midi"
+                        )
+                    st.info("💡 İndirdiğiniz MIDI dosyasını VLC Player, GarageBand veya herhangi bir online MIDI oynatıcı ile dinleyebilirsiniz.")
+            
+            except Exception as e:
+                st.error(f"Senfoni oluşturulurken bir hata meydana geldi: {e}")
 
 if __name__ == "__main__":
     main()
+
+
